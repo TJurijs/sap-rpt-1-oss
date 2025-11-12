@@ -8,6 +8,7 @@ Interactive playground for the `SAP/sap-rpt-1-oss` tabular in-context learner. T
 - Node.js 20 or newer
 - Hugging Face account with access to `SAP/sap-rpt-1-oss`
 - `HUGGINGFACE_API_KEY` saved locally (see the `.env` section below)
+- `curl` and `tar` (needed by `scripts/dev.sh` to fetch the model snapshot)
 
 ## Quickstart
 
@@ -28,13 +29,20 @@ Interactive playground for the `SAP/sap-rpt-1-oss` tabular in-context learner. T
    ```bash
    ./scripts/dev.sh
    ```
-   The script bootstraps a Python virtual environment under `playground/backend/.venv`, installs backend and frontend dependencies, exports `PYTHONPATH`, starts the FastAPI API on port `8000`, waits for it to become healthy, and then launches the Vite dev server on port `5173` (with WebSocket proxying enabled).
+   The script ensures a local copy of the `sap-rpt-1-oss` sources is available (downloading a snapshot if needed), bootstraps a Python virtual environment under `playground/backend/.venv`, installs backend and frontend dependencies (including the model in editable mode), exports `PYTHONPATH`, starts the FastAPI API on port `8000`, waits for it to become healthy, and then launches the Vite dev server on port `5173` (with WebSocket proxying enabled).
 
 4. **Open the UI**  
    Browse to [http://localhost:5173](http://localhost:5173). The status banner confirms Hugging Face connectivity, checkpoint cache state (`sap-rpt-1-oss cached`), and whether the estimator runs on GPU or CPU. A comprehensive progress indicator shows stage, percentage, and ETA while jobs run.
 
 5. **Stop the playground**  
    Press `Ctrl+C` in the same terminal. The script cleans up the background backend process automatically.
+
+## sap-rpt-1-oss Snapshot
+
+- On first launch, `scripts/dev.sh` downloads and unpacks the `sap-rpt-1-oss` repository into a plain directory (`./sap-rpt-1-oss/`) so it can be installed in editable mode without creating a nested Git repo. Subsequent runs reuse the folder.
+- The directory is listed in `.gitignore`; remove it manually if you need to refresh or switch branches.
+- Override the download source by setting `SAP_RPT_SOURCE_URL` (for example, to point at a specific commit tarball) before running the script.
+- The backend uses the local snapshot when instantiating estimators; no additional installation is required after the script finishes.
 
 ## Working with Datasets
 
