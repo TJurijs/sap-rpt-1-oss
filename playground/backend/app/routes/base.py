@@ -18,6 +18,7 @@ import pandas as pd
 import torch
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import StreamingResponse
+from starlette.background import BackgroundTask
 from sklearn.metrics import accuracy_score, classification_report, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
@@ -443,6 +444,9 @@ async def run_dataset(
 )
 async def get_run_status(task_id: str) -> RunStatus:
     result = JOB_REGISTRY.get_result(task_id)
+    failure_detail = JOB_REGISTRY.get_failure(task_id)
+    if failure_detail is not None:
+        return RunStatus(task_id=task_id, state="failed", detail=failure_detail)
     if result is None:
         stream = JOB_REGISTRY.get_stream(task_id)
         if not stream:
@@ -470,7 +474,20 @@ async def get_run_result(task_id: str) -> RunResult:
 async def download_result_file(token: str) -> StreamingResponse:
     file_info = _resolve_result_file(token)
     headers = {"Content-Disposition": f'attachment; filename="{file_info.download_name}"'}
-    return StreamingResponse(file_info.path.open("rb"), media_type="text/csv", headers=headers)
+    def _cleanup():
+        RESULT_FILES.pop(token, None)
+        try:
+            file_info.path.unlink(missing_ok=True)
+        except FileNotFoundError:
+            pass
+
+    background = BackgroundTask(_cleanup)
+    return StreamingResponse(
+        file_info.path.open("rb"),
+        media_type="text/csv",
+        headers=headers,
+        background=background,
+    )
 
 
 @router.websocket("/run/stream/{task_id}")

@@ -37,6 +37,7 @@ class JobRegistry:
     def __init__(self) -> None:
         self._streams: Dict[str, ProgressStreamer] = {}
         self._results: Dict[str, Any] = {}
+        self._failures: Dict[str, str] = {}
 
     def create_job(self) -> tuple[str, ProgressStreamer]:
         task_id = uuid.uuid4().hex
@@ -49,13 +50,22 @@ class JobRegistry:
 
     def set_result(self, task_id: str, result: Any) -> None:
         self._results[task_id] = result
+        self._failures.pop(task_id, None)
 
     def get_result(self, task_id: str) -> Any:
         return self._results.get(task_id)
 
+    def set_failure(self, task_id: str, detail: str) -> None:
+        self._failures[task_id] = detail
+        self._results.pop(task_id, None)
+
+    def get_failure(self, task_id: str) -> Optional[str]:
+        return self._failures.get(task_id)
+
     def clear(self, task_id: str) -> None:
         self._streams.pop(task_id, None)
         self._results.pop(task_id, None)
+        self._failures.pop(task_id, None)
 
     def clear_stream(self, task_id: str) -> None:
         self._streams.pop(task_id, None)
@@ -82,9 +92,14 @@ async def run_inference(
 
         kwargs["progress_callback"] = progress_callback
 
-    result = await event_loop.run_in_executor(None, lambda: task(*args, **kwargs))
-    JOB_REGISTRY.set_result(task_id, result)
-    return result
+    try:
+        result = await event_loop.run_in_executor(None, lambda: task(*args, **kwargs))
+    except Exception as exc:  # noqa: BLE001
+        JOB_REGISTRY.set_failure(task_id, str(exc))
+        raise
+    else:
+        JOB_REGISTRY.set_result(task_id, result)
+        return result
 
 
 

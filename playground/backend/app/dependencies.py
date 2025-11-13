@@ -8,6 +8,8 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+import os
+
 from fastapi import Depends
 from huggingface_hub import login
 
@@ -26,10 +28,11 @@ def setup_environment() -> Settings:
 
     configure_logging()
     settings = get_settings()
+    os.environ.setdefault("HF_HUB_CACHE", str(settings.cache_dir))
 
     if settings.huggingface_token:
         try:
-            login(token=settings.huggingface_token, add_to_git_credential=True)
+            login(token=settings.huggingface_token, add_to_git_credential=False)
             logger.info("Authenticated with Hugging Face Hub")
         except Exception as exc:  # noqa: BLE001
             logger.exception("Failed to authenticate with Hugging Face Hub: %s", exc)
