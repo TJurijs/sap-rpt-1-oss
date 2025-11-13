@@ -1,6 +1,6 @@
 # SAP RPT Playground
 
-Interactive playground for the `SAP/sap-rpt-1-oss` tabular in-context learner. The app combines a FastAPI backend with a React/Vite frontend so you can upload datasets, monitor progress live, and download scored test results.
+Interactive playground for the `SAP/sap-rpt-1-oss` tabular in-context learner. The app combines a FastAPI backend with a React/Vite frontend so you can upload datasets, monitor progress live, and download scored test results. The scripts and instructions were tested on macOS; Windows users may need to adapt paths, shell commands, or dependency setup.
 
 ## Requirements
 
