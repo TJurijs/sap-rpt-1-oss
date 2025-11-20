@@ -14,7 +14,7 @@ Interactive playground for the `SAP/sap-rpt-1-oss` tabular in-context learner. T
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Krimik/sap-rpt-1-oss.git
+   git clone https://github.com/TJurijs/sap-rpt-1-oss.git
    cd sap-rpt-1-oss
    ```
 
