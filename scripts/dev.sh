@@ -96,7 +96,7 @@ echo "Starting backend (uvicorn)..."
     .venv/bin/pip install "${SAP_RPT_INSTALL_ARGS[@]}"
   fi
   source .venv/bin/activate
-  uvicorn playground.backend.main:app --host 0.0.0.0 --port 8000
+  .venv/bin/uvicorn playground.backend.main:app --host 0.0.0.0 --port 8000
 ) &
 
 BACKEND_PID=$!
