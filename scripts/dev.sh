@@ -19,39 +19,11 @@ fi
 ensure_sap_rpt_package() {
   SAP_RPT_INSTALL_ARGS=("-e" "../../sap-rpt-1-oss")
 
-  if [[ -d "${SAP_RPT_PACKAGE_DIR}" ]]; then
-    echo "Using existing sap-rpt-1-oss sources at ${SAP_RPT_PACKAGE_DIR}"
-    return
+  if [[ ! -d "${SAP_RPT_PACKAGE_DIR}" ]]; then
+      echo "Error: sap-rpt-1-oss directory not found at ${SAP_RPT_PACKAGE_DIR}" >&2
+      echo "Please ensure the submodule or directory is present." >&2
+      exit 1
   fi
-
-  echo "sap-rpt-1-oss sources not found. Downloading snapshot..."
-
-  if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1; then
-    echo "Error: both curl and tar are required to download sap-rpt-1-oss. Install the package manually and rerun the script." >&2
-    exit 1
-  fi
-
-  local tmp_dir
-  tmp_dir="$(mktemp -d)"
-
-  if ! curl -fSL "${SAP_RPT_ARCHIVE_URL}" \
-    | tar -xz -C "${tmp_dir}"; then
-    echo "Error: failed to download sap-rpt-1-oss sources from ${SAP_RPT_ARCHIVE_URL}." >&2
-    rm -rf "${tmp_dir}"
-    exit 1
-  fi
-
-  local extracted_dir
-  extracted_dir="$(find "${tmp_dir}" -mindepth 1 -maxdepth 1 -type d | head -n 1 || true)"
-
-  if [[ -z "${extracted_dir}" || ! -d "${extracted_dir}" ]]; then
-    echo "Error: sap-rpt-1-oss archive did not unpack correctly." >&2
-    rm -rf "${tmp_dir}"
-    exit 1
-  fi
-
-  mv "${extracted_dir}" "${SAP_RPT_PACKAGE_DIR}"
-  rm -rf "${tmp_dir}"
 }
 
 cleanup() {
