@@ -13,7 +13,7 @@ from huggingface_hub.file_download import hf_hub_download
 
 import sap_rpt_oss.constants as rpt_constants
 from sap_rpt_oss import SAP_RPT_OSS_Classifier, SAP_RPT_OSS_Regressor
-from sap_rpt_oss.scripts.start_embedding_server import start_embedding_server
+# from sap_rpt_oss.scripts.start_embedding_server import start_embedding_server
 
 from playground.backend.config import Settings, get_settings
 
@@ -70,27 +70,12 @@ class ModelManager:
         return self._checkpoint_path
 
     def _override_zmq_port(self) -> None:
-        if self._zmq_override_applied:
-            return
-        desired_port = int(self.settings.zmq_port)
-        if desired_port != rpt_constants.ZMQ_PORT_DEFAULT:
-            logger.info(
-                "Overriding sap-rpt-1-oss embedding port from %s to %s",
-                rpt_constants.ZMQ_PORT_DEFAULT,
-                desired_port,
-            )
-            rpt_constants.ZMQ_PORT_DEFAULT = desired_port
-        self._zmq_override_applied = True
+        # ZMQ server is no longer used in the latest sap-rpt-1-oss version; embedding is in-process.
+        pass
 
     def _start_embedding_server(self) -> None:
         if not self._embedding_started:
-            self._override_zmq_port()
-            logger.info("Starting embedding server on port %s", self.settings.zmq_port)
-            start_embedding_server(
-                sentence_embedding_model_name="sentence-transformers/all-MiniLM-L6-v2",
-                gpu_idx=0 if torch.cuda.is_available() else None,
-                zmq_port=self.settings.zmq_port,
-            )
+            logger.info("Embedding is handled in-process; no external server needed.")
             self._embedding_started = True
 
     def _build_estimator(self, task: Literal["classification", "regression"]):

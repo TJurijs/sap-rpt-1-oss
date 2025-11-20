@@ -108,6 +108,8 @@ echo "Starting frontend (npm run dev)..."
 cd "${FRONTEND_DIR}"
 if [[ ! -d "node_modules" ]]; then
   npm install
+  echo "Running npm audit fix..."
+  npm audit fix || true
 fi
 npm run dev -- --host 0.0.0.0
 
